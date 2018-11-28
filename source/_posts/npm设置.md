@@ -61,12 +61,3 @@ tags:
     ```
 
 
-
-# NPM其他命令
-
-查看包信息
-
-```
-npm info hexo-cli
-```
-
