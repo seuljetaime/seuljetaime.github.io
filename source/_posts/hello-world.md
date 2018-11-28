@@ -36,3 +36,32 @@ $ hexo deploy
 ```
 
 More info: [Deployment](https://hexo.io/docs/deployment.html)
+
+# Draft
+
+## Create a new draft
+
+```bash
+$ hexo new draft "Draft title"
+```
+
+## Preview Draft
+
+```bash
+$ hexo s --draft
+```
+
+## Publish Draft
+
+```bash
+$ hexo p "Draft title without .md suffix"
+$ hexo publish "Draft title without .md suffix"
+```
+
+## Generate And Deploy
+
+```bash
+$ hexo generate
+$ hexo deploy
+```
+
