@@ -11,7 +11,7 @@ tags:
 
 ## 集群Cluster
 
-单节点的复制模式，每个节点提供相同服务。 请求由负载均衡（比如nginx）转发到节点。
+单节点的复制模式，每个节点提供相同服务。 请求由Http服务器（比如Nginx）转发到节点。
 
 **好处：**
 
@@ -20,7 +20,7 @@ tags:
 
 ## 分布式Distributed
 
-一个业务拆分成多个业务子系统，各子系统单独部署。比如图片、定时任务这些可以拆开独立部署。分布式的子系统相对来说业务之间的耦合性会高
+一个业务拆分成多个业务子系统，各子系统单独部署。比如图片、定时任务这些可以拆开独立部署。分布式一般部署到不同服务器上。分布式的子系统相对来说业务之间的耦合性会高。
 
 分布式的单个业务子系统也可以做集群。
 
@@ -74,9 +74,29 @@ Building distributed systems doesn't need to be complex and error-prone. Spring 
 
 ![Eureka](/spring-cloud/eureka-mini-system.jpg)
 
+
+
+Eureka Server提供服务注册功能，所有服务都向此中心注册。
+
+当服务需要调用服务时，向此中心获取调用节点。
+
+
+
+服务注册参见：
+
+eureka-server、provider、provoder2代码
+
+
+
+服务调用参见：
+
+eureka-server、provider、provoder2、ribbon或feign
+
 ## 熔断
 
 ![熔断](/spring-cloud/HystrixFallback.png)
+
+当某个服务不可用时
 
 ## 服务跟踪
 
@@ -118,7 +138,7 @@ Provider:
 
 ### 链路图形化监控
 
-
+参见zipkin-server
 
 # 参考链接
 
