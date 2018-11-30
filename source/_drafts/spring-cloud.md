@@ -92,11 +92,27 @@ eureka-server、provider、provoder2代码
 
 eureka-server、provider、provoder2、ribbon或feign
 
-## 熔断
+
+
+模块说明：
+
++ eureka-server 服务注册中心
+
++ provider、provider2相同的REST接口，都注册为test-service，只是端口不同，用于测试负载
++ ribbon 使用RestTemplate调用provider的test-service
++ feign 使用声明式服务调用，以接口形式调用test-service。 Feign整合了ribbon及Hystrix的功能
+
+## 服务降级
 
 ![熔断](/spring-cloud/HystrixFallback.png)
 
-当某个服务不可用时
+
+
+当某个方法故障时，执行声明的fallback方法，对服务进行降级。
+
+当故障次数过多时，会触发断路，后续的请求不再调用主流程，改为直接调用fallback。 在一定时间内Hystrix会释放一次请求到原来的主流程方法以验证服务是否正常。
+
+触发断路的默认策略：10秒内至少有20个请求，并且错误的百分比为50%
 
 ## 服务跟踪
 
