@@ -24,3 +24,12 @@ tags:
 ## 官方引入图片的描述
 
 [官方资源文件描述链接](https://hexo.io/zh-cn/docs/asset-folders.html)
+
+
+
+# Hexo
+
+## 首页文章预览
+
+在markdown中需要切割预览的地方增加一个 `<!-- more -->`
+
