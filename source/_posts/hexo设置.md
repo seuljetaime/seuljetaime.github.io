@@ -1,7 +1,7 @@
 ---
 title: hexo设置
 date: 2018-11-28 14:33:38
-tags:
+tags: hexo
 ---
 
 
@@ -32,6 +32,12 @@ tags:
 ## 首页文章预览
 
 在markdown中需要切割预览的地方增加一个 `<!-- more -->`
+
+
+
+## 启用tags
+
+具体请见next主题的wiki [链接](https://github.com/iissnan/hexo-theme-next/wiki/%E5%88%9B%E5%BB%BA%E6%A0%87%E7%AD%BE%E4%BA%91%E9%A1%B5%E9%9D%A2)
 
 
 
