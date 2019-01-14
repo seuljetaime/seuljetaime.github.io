@@ -80,16 +80,24 @@ Use the Kubernetes command-line tool, [kubectl](https://kubernetes.io/docs/user-
 
 ## Docker
 
-如果能连接外网，可以自行配置网络yum安装，请参照`https://docs.docker.com/install/linux/docker-ce/centos/`自行安装。本文章介绍的是本地手动安装，CentOS 7 ISO本地更新源请先自行配置，需额外安装包。
+kubernetes与Docker18.09有问题，此时请使用Docker 18.06。
 
-1. 手动下载Docker`https://download.docker.com/linux/centos/7/x86_64/stable/Packages/`，此时最新版是`docker-ce-18.09.1-3.el7.x86_64.rpm   `，需下载containerd.io、docker-ce、docker-ce-cli
+推荐版本请见`https://kubernetes.io/docs/setup/cri/#docker`
+
+```
+On each of your machines, install Docker. Version 18.06 is recommended
+```
+
+如果能连接外网，可以自行配置网络yum安装特定版本，请参照`https://docs.docker.com/install/linux/docker-ce/centos/`自行安装。本文章介绍的是本地手动安装，CentOS 7 ISO本地更新源请先自行配置，需额外安装包。
+
+1. 手动下载Docker`https://download.docker.com/linux/centos/7/x86_64/stable/Packages/`，下载`docker-ce-18.06.1.ce-3.el7.x86_64.rpm   `
 
 2. 下载`container-selinux`, 本地更新源中没有，需要网络下载`http://mirror.centos.org/centos/7/extras/x86_64/Packages/`查找container-selinux，下载最新版
 
 3. 安装Docker
 
 ```
-yum install container-selinux-2.74-1.el7.noarch.rpm docker-ce-18.09.1-3.el7.x86_64.rpm containerd.io-1.2.2-3.el7.x86_64.rpm docker-ce-cli-18.09.1-3.el7.x86_64.rpm
+yum install docker-ce-18.06.1.ce-3.el7.x86_64.rpm container-selinux-2.74-1.el7.noarch.rpm
 ```
 
 
