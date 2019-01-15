@@ -5,7 +5,8 @@ tags: k8s
 ---
 
 本文只介绍初步搭建k8s集群的步骤，没有深入。
-搭建前请自行安装3个Linux虚拟机，本文以CentOS 7为例。
+
+本文以CentOS 7 虚拟机为环境进行编写。
 
 
 
@@ -64,9 +65,12 @@ Use the Kubernetes command-line tool, [kubectl](https://kubernetes.io/docs/user-
      && chmod +x minikube
    ```
 
-2. 移动到PATH目录，如果使用浏览器下载的，没有将minikube-linux-amd64重命名为minikube，请自行修改下面的命令
+2. 移动到PATH目录，如果使用浏览器下载的，没有将minikube-linux-amd64重命名为minikube，请使用第二条命令
 
    ```shell
+   mv minikube /usr/local/bin/minikube
+   
+   # 没有重命名则使用这条命令
    mv minikube-linux-amd64 /usr/local/bin/minikube
    ```
 
@@ -100,49 +104,54 @@ On each of your machines, install Docker. Version 18.06 is recommended
 yum install docker-ce-18.06.1.ce-3.el7.x86_64.rpm container-selinux-2.74-1.el7.noarch.rpm
 ```
 
+### 启动Docker服务
+
+```
+# 启动
+systemctl start docker
+
+# 查看状态
+systemctl status docker
+
+# 设置开机启动
+systemctl enable docker
+
+# 关闭服务
+systemctl stop docker
+```
 
 
-## kubelet、kubeadm
 
-**可选**。minikube启动时会去 `https://storage.googleapis.com` 下载kubelet、kubeadm。如果你的minikube环境不能访问此链接的话，需执行这一步。
+## 启动minikube及配置
 
-1. 从可访问storage.googleapis.com机器下载kubelet、kubeadm
-2. 下载后上传到minikube所在的环境
-3. 配置minikube所在机器的hosts，将storage.googleapis.com指向自己本机
-4. 在本机用python启动一个https服务器
-
-## 启动及配置
-
-1. 下载kubelet、kubeadm
-
-   ```
-   https://storage.googleapis.com/kubernetes-release/release/v1.12.4/bin/linux/amd64/kubelet
-   https://storage.googleapis.com/kubernetes-release/release/v1.12.4/bin/linux/amd64/kubeadm
-   ```
-
+需先启动好docker服务
 
 1. 启动
     ```
     minikube start --vm-driver=none
+    
+    # 会去下载 kubeadm、kubelet
+    # https://storage.googleapis.com/kubernetes-release/release/v1.12.4/bin/linux/amd64/kubeadm
+    # https://storage.googleapis.com/kubernetes-release/release/v1.12.4/bin/linux/amd64/kubelet
     ```
 
+2. 如果在上一步不能下载到这两个，请按这一步手动下载。否则可跳过这一步.
 
+   + 使用能访问storage.googleapis.com的电脑下载以下2个文件，如果版本不对应你现在的版本，请自行修改
 
+   ```
+   https://storage.googleapis.com/kubernetes-release/release/v1.12.4/bin/linux/amd64/kubelet
+   
+   https://storage.googleapis.com/kubernetes-release/release/v1.12.4/bin/linux/amd64/kubeadm
+   ```
 
+   + 将2个文件放置到k8s环境下的 ~/.minikube/cache/v1.12.4/。如有需要，请自行修改版本
+   + 重新执行minikube start --vm-driver=none
 
-# 增强
+3. 如果遇到如下错误：
 
-## kubectl shell autocompletion
+    ```
+    [ERROR ImagePull]: failed to pull image k8s.gcr.io/kube-apiserver:v1.12.4: output: Error response from daemon: Get https://k8s.gcr.io/v2/: dial tcp: lookup k8s.gcr.io on [::1]:53: read udp [::1]:39248->[::1]:53: read: connection refused
+    ```
 
-未验证bash-completion是否是额外yum更新源的
-
-```
-yum install bash-completion -y
-
-# 手动刷新以启用功能
-source <(kubectl completion bash)
-
-# 自动加载
-echo "source <(kubectl completion bash)" >> ~/.bashrc
-```
-
+    
