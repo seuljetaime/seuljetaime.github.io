@@ -154,4 +154,31 @@ systemctl stop docker
     [ERROR ImagePull]: failed to pull image k8s.gcr.io/kube-apiserver:v1.12.4: output: Error response from daemon: Get https://k8s.gcr.io/v2/: dial tcp: lookup k8s.gcr.io on [::1]:53: read udp [::1]:39248->[::1]:53: read: connection refused
     ```
 
+    + 我是通过本机的docker，不是k8s环境。 然后设置docker-machine的代理，通过本机docker挂代理下载这些镜像。
+
+    ```
+    docker-machine ssh default
+    sudo -i
     
+    # 编辑/var/lib/boot2docker/profile，在最后加入。如果使用的是Windows的ShadowSocks，则在右键中启用“允许其他设备连入”
+    export HTTP_PROXY=http://192.168.99.1:1080
+    export HTTPS_PROXY=http://192.168.99.1:1080
+    
+    # 保存退出，并退出root及docker-machine，之后重新docker-machine
+    docker-machine restart default
+    ```
+
+    + docker pull 那些image
+    + `docker save k8s.gcr.io/coredns > coredns`  打包归档这个image。其他image类似
+    + 上传打包好的各个image
+    + `docker load < coredns`，加载image
+    + `docker images`可以看到载入的image
+    + 重新执行`minikube start --vm-driver=none`
+
+
+
+## minikube控制台
+
+创建`kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml`， 访问不了这个文件的话可以先下载到文件中
+
+启动` minikube dashboard`
