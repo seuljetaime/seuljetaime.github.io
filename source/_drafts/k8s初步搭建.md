@@ -18,6 +18,27 @@ tags: k8s
 
 
 
+Kubernetes 容器集群管理系统。
+
+**功能：**
+
+1. 服务监控
+2. 负载均衡
+
+## 概念
+
+node：节点。master、worker
+
+pod：相关的服务整合成一个pod
+
+
+
+master: kube-apiserver、kube-controller-manager、kube-scheduler
+
+worker:kubelet、kube-proxy
+
+
+
 # 搭建
 
 ## kubectl
