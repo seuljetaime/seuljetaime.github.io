@@ -4,7 +4,7 @@ date: 2019-01-11 11:18:51
 tags: k8s
 ---
 
-本文只介绍初步搭建k8s集群的步骤，没有深入。
+本文只介绍初步搭建k8s单节点的步骤，没有深入。
 
 本文以CentOS 7 虚拟机为环境进行编写。
 
@@ -18,7 +18,7 @@ tags: k8s
 
 
 
-Kubernetes 容器集群管理系统。
+Kubernetes 容器管理系统。
 
 **功能：**
 
@@ -113,7 +113,7 @@ kubernetes与Docker18.09有问题，此时请使用Docker 18.06。
 On each of your machines, install Docker. Version 18.06 is recommended
 ```
 
-如果能连接外网，可以自行配置网络yum安装特定版本，请参照`https://docs.docker.com/install/linux/docker-ce/centos/`自行安装。本文章介绍的是本地手动安装，CentOS 7 ISO本地更新源请先自行配置，需额外安装包。
+如果能连接外网，可以自行配置网络yum安装特定版本，请参照`https://docs.docker.com/install/linux/docker-ce/centos/`自行安装。本文章介绍的是本地手动安装，**CentOS 7 ISO本地更新源请先自行配置，需额外安装包**。
 
 1. 手动下载Docker`https://download.docker.com/linux/centos/7/x86_64/stable/Packages/`，下载`docker-ce-18.06.1.ce-3.el7.x86_64.rpm   `
 
@@ -158,7 +158,7 @@ systemctl stop docker
 
 2. 如果在上一步不能下载到这两个，请按这一步手动下载。否则可跳过这一步.
 
-   + 使用能访问storage.googleapis.com的电脑下载以下2个文件，如果版本不对应你现在的版本，请自行修改
+   + 使用能访问storage.googleapis.com的电脑下载以下2个文件，**如果版本不对应你现在的版本，请自行修改**
 
    ```
    https://storage.googleapis.com/kubernetes-release/release/v1.12.4/bin/linux/amd64/kubelet
@@ -200,6 +200,38 @@ systemctl stop docker
 
 ## minikube控制台
 
-创建`kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml`， 访问不了这个文件的话可以先下载到文件中
+1. 创建dashboard服务
+
+   `kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml`， 访问不了这个文件的话可以先下载到文件中
+
+2. 如果查看到
+
+   ```
+   [root@localhost ~]# kubectl get pods --namespace=kube-system
+   
+   kubernetes-dashboard-65c76f6c97-mxlq7   0/1     CrashLoopBackOff   84         22d
+   ```
+
+   可以查看日志
+
+   ```
+   kubectl logs kubernetes-dashboard-65c76f6c97-mxlq7 --namespace=kube-system
+   
+   Get https://10.96.0.1:443/version: dial tcp 10.96.0.1:443: connect: no route to host
+   ```
+
+   
 
 启动` minikube dashboard`
+
+
+
+## 其他命令
+
+```
+# 查看kube系统的pod
+kubectl get pods --namespace=kube-system
+
+kubectl get deployments --namespace=kube-system
+```
+
