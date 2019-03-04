@@ -31,7 +31,7 @@ tags:
 
    `yum install telnet-server`
 
-   telnet-client看你是否需要，可不安装。CentOS7使用了systemd，不需要安装xinetd
+   telnet 这个client看你是否需要，可不安装。CentOS7使用了systemd，不需要安装xinetd
 
 2. 修改telnet默认端口，默认是23，修改成你需要的端口
 
@@ -57,14 +57,39 @@ tags:
    firewall-cmd --reload
    ```
 
-4. 开放SELinux，如果启用了的话，并且修改了23端口，不然会报`telnet.socket failed to listen on sockets: Permission denied`。2889是telnet新的端口
+4. SELinux
+
+   此处关闭SELinux，后面的openssh在启用SELinux状态下登录会提示Access Denied
 
    ```
-   semanage port -a -t telnetd_port_t -p tcp 2889
+   # 永久关闭SELinux
+   vi /etc/selinux/config
+   将里面的值设置为 SELINUX=disabled
    
-   # -bash: semanage: command not found 时需额外安装
-   yum install policycoreutils-python
+   # 临时关闭
+   setenforce 0
    ```
+
+   
+
+   下文的供参考
+
+   >  如果启用SELinux并且修改了23端口，需额外设置，不然会报`telnet.socket failed to listen on sockets: Permission denied`。2889是telnet新的端口
+   >
+   > ```
+   > # 判断SELinux状态
+   > [root@localhost ~]# getenforce
+   > Enforcing
+   > # 增强模式表示已启用
+   > 
+   > semanage port -a -t telnetd_port_t -p tcp 2889
+   > 
+   > # -bash: semanage: command not found 时需额外安装
+   > yum install policycoreutils-python
+   > ```
+   >
+   > 
+
 
 5. 开机启动telnet服务
 
@@ -93,8 +118,11 @@ telnet 192.168.99.100 2889
 
 
 
-
 # OpenSSH
+
+**新安装的ssh端口是默认的22，如果对以前的ssh修改过默认端口，注意你的防火墙。**
+
+
 
 1. 下载最新的OpenSSH7.9 `https://www.openssh.com/`，并上传到服务器
 
@@ -114,7 +142,8 @@ telnet 192.168.99.100 2889
 
    ```
    tar -zxvf openssh-7.9p1.tar.gz
-   ./configure --prefix=/usr --sysconfdir=/etc/ssh --with-md5-passwords --with-zlib --with-selinux --with-pam
+   cd openssh-7.9p1
+   ./configure --prefix=/usr --sysconfdir=/etc/ssh --with-md5-passwords --with-zlib --with-pam
    ```
 
 5. make但不make install
@@ -131,7 +160,7 @@ telnet 192.168.99.100 2889
    rpm -qa |grep openssh
    ```
 
-7. 修改配置文件的权限
+7. 修改配置文件的权限。或者删除`rm -rf /etc/ssh`
 
    ```
    chmod 600 /etc/ssh/ssh_host_rsa_key
@@ -150,14 +179,20 @@ telnet 192.168.99.100 2889
    ```
    cp contrib/redhat/sshd.init /etc/init.d/sshd
    chkconfig --add sshd
+   
+   # 默认的是on的，可以再次设置，列出以便确认
+   chkconfig --list sshd
+   chkconfig sshd on
+   chkconfig --list sshd
    ```
 
-10. 允许root登录ssh，将/etc/ssh/sshd_config 中PermitRootLogin的值修改为yes
+10. 允许root登录ssh，将/etc/ssh/sshd_config 中PermitRootLogin的值修改为yes，或者在文件最后加一行
 
     ```
     vi /etc/ssh/sshd_config
     
     PermitRootLogin yes
+    UsePAM yes
     ```
 
 11. 重启ssh服务
@@ -166,4 +201,33 @@ telnet 192.168.99.100 2889
     service sshd restart
     ```
 
-    
+12. 验证
+
+    ```
+    ssh -V
+    ```
+
+
+
+# 关闭Telnet
+
+1. 清理防火墙
+
+   ```
+   # 如果配置的是默认的23端口并且用的是service
+   firewall-cmd --remove-service=telnet --zone=public --permanent
+   
+   # 如果配置的自定义端口
+   firewall-cmd --remove-port=2889/tcp --zone=public --permanent
+   
+   # 重载使防火墙生效
+   firewall-cmd --reload
+   ```
+
+2. 卸载telnet-server
+
+   ```
+   yum remove telnet-server
+   ```
+
+   
