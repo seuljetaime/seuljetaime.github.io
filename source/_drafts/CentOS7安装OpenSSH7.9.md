@@ -130,6 +130,9 @@ telnet 192.168.99.100 2889
 
    ```
    cp -ar /etc/ssh /etc/ssh_bak
+   
+   # 如果后续的/etc/ssh/sshd_config中要设置UsePAM yes，则备份
+   cp /etc/pam.d/sshd /etc/pam.d/sshd_bak
    ```
 
 3. 安装编译前依赖，INSTALL中有版本要求，最新的yum rpm包满足要求
@@ -143,6 +146,7 @@ telnet 192.168.99.100 2889
    ```
    tar -zxvf openssh-7.9p1.tar.gz
    cd openssh-7.9p1
+   
    ./configure --prefix=/usr --sysconfdir=/etc/ssh --with-md5-passwords --with-zlib --with-pam
    ```
 
@@ -186,22 +190,30 @@ telnet 192.168.99.100 2889
    chkconfig --list sshd
    ```
 
-10. 允许root登录ssh，将/etc/ssh/sshd_config 中PermitRootLogin的值修改为yes，或者在文件最后加一行
+10. 允许root登录ssh，将/etc/ssh/sshd_config 中PermitRootLogin的值修改为yes，或者在文件最后加一行。
 
     ```
     vi /etc/ssh/sshd_config
     
     PermitRootLogin yes
+    PasswordAuthentication yes
+    ChallengeResponseAuthentication no
     UsePAM yes
     ```
 
-11. 重启ssh服务
+11. 如果上面的UsePAM 设置为yes，则还原备份的sshd pam
+
+    ```
+    cp /etc/pam.d/sshd_bak /etc/pam.d/sshd
+    ```
+
+12. 重启ssh服务
 
     ```
     service sshd restart
     ```
 
-12. 验证
+13. 验证
 
     ```
     ssh -V
@@ -231,3 +243,11 @@ telnet 192.168.99.100 2889
    ```
 
    
+
+
+
+# 其他参考
+
+测试sshd_config
+
+`/usr/sbin/sshd -t -f /etc/ssh/sshd_config`
