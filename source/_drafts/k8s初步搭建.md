@@ -198,7 +198,7 @@ systemctl stop docker
 
 
 
-## minikube控制台
+## minikube监控
 
 1. 创建dashboard服务
 
@@ -217,7 +217,19 @@ systemctl stop docker
    ```
    kubectl logs kubernetes-dashboard-65c76f6c97-mxlq7 --namespace=kube-system
    
+   Error while initializing connection to Kubernetes apiserver...
    Get https://10.96.0.1:443/version: dial tcp 10.96.0.1:443: connect: no route to host
+   ```
+
+   使用下列命令重启服务
+
+   ```
+   systemctl stop kubelet
+   systemctl stop docker
+   iptables --flush
+   iptables -tnat --flush
+   systemctl start kubelet
+   systemctl start docker
    ```
 
    
