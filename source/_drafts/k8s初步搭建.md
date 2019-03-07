@@ -232,6 +232,22 @@ systemctl stop docker
    systemctl start docker
    ```
 
+3. 使用虚拟机环境中的浏览器访问dashboard
+
+   ```
+   kubectl proxy
+   
+   http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+   ```
+
+4. 创建dashboard的token
+
+   ```
+   kubectl create -f dashboard-adminuser.yaml
+   
+   kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
+   ```
+
    
 
 启动` minikube dashboard`
@@ -245,5 +261,15 @@ systemctl stop docker
 kubectl get pods --namespace=kube-system
 
 kubectl get deployments --namespace=kube-system
+```
+
+
+
+如果遇到dns
+
+```
+kubectl -n kube-system edit configmap coredns
+
+删除里面的loop
 ```
 
