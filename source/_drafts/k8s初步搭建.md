@@ -8,6 +8,8 @@ tags: k8s
 
 本文以CentOS 7 虚拟机为环境进行编写。
 
+也可以使用[kubernetes.io的互动教程](https://kubernetes.io/zh/docs/tutorials/kubernetes-basics/cluster-interactive/)快速模拟搭建。
+
 
 
 <!-- more -->
@@ -271,5 +273,93 @@ kubectl get deployments --namespace=kube-system
 kubectl -n kube-system edit configmap coredns
 
 删除里面的loop
+```
+
+
+
+启动minikube
+
+```
+minikube start
+```
+
+kubectl版本
+
+```
+kubectl version
+```
+
+查看集群
+
+```
+kubectl cluster-info
+```
+
+查看节点
+
+```
+kubectl get nodes
+```
+
+创建deployment,
+
+> We want to run the app on a specific port so we add the `--port`
+
+```
+kubectl run kubernetes-bootcamp --image=gcr.io/google-samples/kubernetes-bootcamp:v1 --port=8080
+```
+
+获取deployment
+
+```
+kubectl get deployments
+```
+
+获取pods
+
+```
+kubectl get pods
+```
+
+获取pod的描述
+
+```
+kubectl describe pods
+```
+
+查看pod日志
+
+```
+kubectl logs $POD_NAME
+```
+
+查看pod ENV
+
+```
+kubectl exec $POD_NAME env
+```
+
+pod的交互模式
+
+```
+kubectl exec -ti $POD_NAME bash
+```
+
+创建新service，并指定NodePort
+
+```
+kubectl expose deployment/kubernetes-bootcamp --type="NodePort" --port 8080
+```
+
+查看service描述
+
+```
+kubectl describe services/kubernetes-bootcamp
+```
+
+访问NodePort资源
+
+```
+curl http://$NODE_IP:$SERVICE_Node_Port
 ```
 
