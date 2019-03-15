@@ -20,6 +20,27 @@ tags: k8s
 
 
 
+> Kubernetes 是一个跨主机集群的 [开源的容器调度平台，它可以自动化应用容器的部署、扩展和操作](http://www.slideshare.net/BrianGrant11/wso2con-us-2015-kubernetes-a-platform-for-automating-deployment-scaling-and-operations) , 提供以容器为中心的基础架构。
+>
+> 使用 Kubernetes, 您可以快速高效地响应客户需求:
+>
+> - 快速、可预测地部署您的应用程序
+> - 拥有即时扩展应用程序的能力
+> - 不影响现有业务的情况下，无缝地发布新功能
+> - 优化硬件资源，降低成本
+>
+> 我们的目标是构建一个软件和工具的生态系统，以减轻您在公共云或私有云运行应用程序的负担。
+>
+> #### Kubernetes 具有如下特点:
+>
+> - **便携性**: 无论公有云、私有云、混合云还是多云架构都全面支持
+> - **可扩展**: 它是模块化、可插拔、可挂载、可组合的，支持各种形式的扩展
+> - **自修复**: 它可以自保持应用状态、可自重启、自复制、自缩放的，通过声明式语法提供了强大的自修复能力
+>
+> Kubernetes 项目由 Google 公司在 2014 年启动。Kubernetes 建立在 [Google 公司超过十余年的运维经验基础之上，Google 所有的应用都运行在容器上](https://research.google.com/pubs/pub43438.html), 再与社区中最好的想法和实践相结合，也许它是最受欢迎的容器平台。
+
+
+
 Kubernetes 容器管理系统。
 
 **功能：**
@@ -362,4 +383,334 @@ kubectl describe services/kubernetes-bootcamp
 ```
 curl http://$NODE_IP:$SERVICE_Node_Port
 ```
+
+查看deployment
+
+```
+kubectl describe deployment
+```
+
+根据label获取pod、service
+
+```
+kubectl get pods -l run=kubernetes-bootcamp
+kubectl get services -l run=kubernetes-bootcamp
+```
+
+给pod添加label
+
+```
+kubectl label pod $POD_NAME app=v1
+```
+
+根据label删除service
+
+```
+kubectl delete service -l run=kubernetes-bootcamp
+```
+
+修改冗余份数
+
+```
+kubectl scale deployments/kubernetes-bootcamp --replicas=4
+```
+
+滚动更新
+
+```
+kubectl set image deployments/kubernetes-bootcamp kubernetes-bootcamp=jocatalin/kubernetes-bootcamp:v2
+```
+
+滚动状态
+
+```
+kubectl rollout status deployments/kubernetes-bootcamp
+```
+
+回滚
+
+```
+kubectl rollout undo deployments/kubernetes-bootcamp
+```
+
+
+
+# kubeadm 
+
+[kubeadm官方安装链接](https://kubernetes.io/docs/setup/independent/install-kubeadm/)
+
+官方安装要求：
+
+- One or more machines running one of:
+  - Ubuntu 16.04+
+  - Debian 9
+  - CentOS 7
+  - RHEL 7
+  - Fedora 25/26 (best-effort)
+  - HypriotOS v1.0.1+
+  - Container Linux (tested with 1800.6.0)
+- 2 GB or more of RAM per machine (any less will leave little room for your apps)
+- 2 CPUs or more
+- Full network connectivity between all machines in the cluster (public or private network is fine)
+- Unique hostname, MAC address, and product_uuid for every node. See [here](https://kubernetes.io/docs/setup/independent/install-kubeadm/#verify-the-mac-address-and-product-uuid-are-unique-for-every-node) for more details.
+- Certain ports are open on your machines. See [here](https://kubernetes.io/docs/setup/independent/install-kubeadm/#check-required-ports) for more details.
+- Swap disabled. You **MUST** disable swap in order for the kubelet to work properly.
+
+
+
+## master
+
+1. 配置本地更新源
+
+2. 禁用防火墙
+
+     ```
+      systemctl disable firewalld.service
+      systemctl stop firewalld.service
+     ```
+
+3. 设置主机名
+
+     ```
+     hostnamectl set-hostname master
+     echo "127.0.0.1 master" >> /etc/hosts
+     ```
+
+4. 禁用swap
+
+   ```bash
+   # 查看swap
+   swapon --show
+   free -h
+   
+   vi /etc/fstab
+   # 注释掉swap那行
+   
+   # 需要重启，或者可临时关闭
+   swapoff -a
+   ```
+
+5. 禁用SELinux
+
+      ```
+      # 永久关闭SELinux
+      vi /etc/selinux/config
+      设置为 SELINUX=disabled
+      
+      # 需要重启，不重启临时禁用使用
+      setenforce 0 
+      ```
+
+6. 安装docker并设置自启动
+
+      ```bash
+      yum install docker-ce-18.06.1.ce-3.el7.x86_64.rpm container-selinux-2.74-1.el7.noarch.rpm
+      [root@master ~]# systemctl enable docker.service
+      Created symlink from /etc/systemd/system/multi-user.target.wants/docker.service to /usr/lib/systemd/system/docker.service.
+      [root@master ~]# systemctl start docker.service
+      [root@master ~]# systemctl status docker.service
+      ```
+
+### 安装kubeadm
+
+[官方中文安装文档](https://kubernetes.io/zh/docs/setup/independent/install-kubeadm/)
+
+> ```bash
+> cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+> [kubernetes]
+> name=Kubernetes
+> baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+> enabled=1
+> gpgcheck=1
+> repo_gpgcheck=1
+> gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+> exclude=kube*
+> EOF
+> 
+> # 将 SELinux 设置为 permissive 模式(将其禁用)
+> setenforce 0
+> sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+> 
+> yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+> 
+> systemctl enable kubelet && systemctl start kubelet
+> ```
+
+1. 配置更新源或者在第二步时使用离线下载
+
+   官方的`packages.cloud.google.com`更新源可能无法访问，可以使用阿里的`mirrors.aliyun.com/kubernetes`。
+
+   [阿里镜像](https://opsx.alibaba.com/mirror) 在列表中找到kubernetes，列表的最右有Help说明怎么配置yum源
+
+   ```bash
+   cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+   [kubernetes]
+   name=Kubernetes
+   baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+   enabled=1
+   gpgcheck=1
+   repo_gpgcheck=1
+   gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+   EOF
+   ```
+
+2. 安装kubeadm、kubelet、kubectl并启用服务
+
+   ```bash
+   yum install -y kubelet kubeadm kubectl
+   systemctl enable kubelet && systemctl start kubelet
+   ```
+
+   如果是离线服务器可以从外部服务器仅下载，然后上传到离线服务器。--destdir自行指定
+
+   ```
+   yum install yum-utils
+   yumdownloader --resolve kubelet kubeadm kubectl --destdir=/root/k8s_rpm
+   rpm -Uvh /root/k8s_rpm/*.rpm
+   systemctl enable kubelet && systemctl start kubelet
+   ```
+
+3. 文档中有说明cgroup，如果不是请自行按文档设置
+
+   [在 Master 节点上配置 kubelet 所需的 cgroup 驱动](https://kubernetes.io/zh/docs/setup/independent/install-kubeadm/#%E5%9C%A8-master-%E8%8A%82%E7%82%B9%E4%B8%8A%E9%85%8D%E7%BD%AE-kubelet-%E6%89%80%E9%9C%80%E7%9A%84-cgroup-%E9%A9%B1%E5%8A%A8)
+
+   ```bash
+   [root@master ~]# docker info | grep Cgroup
+   Cgroup Driver: cgroupfs
+   ```
+
+### 创建master
+
+[官方中文文档](https://kubernetes.io/zh/docs/setup/independent/create-cluster-kubeadm/)
+
+[官方英文文档](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)  英文文档比中文文档新，里面有记录1.13.x版
+
+本文使用单master，使用root安装
+
+```bash
+[root@master ~]# kubeadm init
+I0314 03:50:30.587984   13231 version.go:94] could not fetch a Kubernetes version from the internet: unable to get URL "https://dl.k8s.io/release/stable-1.txt": Get https://dl.k8s.io/release/stable-1.txt: net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+I0314 03:50:30.588396   13231 version.go:95] falling back to the local client version: v1.13.4
+[init] Using Kubernetes version: v1.13.4
+[preflight] Running pre-flight checks
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+error execution phase preflight: [preflight] Some fatal errors occurred:
+        [ERROR ImagePull]: failed to pull image k8s.gcr.io/kube-apiserver:v1.13.4: output: Error response from daemon: Get https://k8s.gcr.io/v2/: net/http: TLS handshake timeout
+, error: exit status 1
+```
+
+https://dl.k8s.io/release/stable-1.txt  这个可能无法访问，请自行解决，如果版本和你local client的版本不一样，考虑是否升级。也可以使用`kubeadm init --kubernetes-version v1.13.4` 指定具体版本，跳过此网络请求。
+
+后面的docker pull image是从https://k8s.gcr.io，有两种处理方式：
+
+1. 改docker 挂代理，在上文中有说明
+
+2. 修改成从阿里pull
+
+   
+
+本文使用从阿里获取，并提供导出docker image命令，用于离线服务器离线导入
+
+由于下文还需设置网络，本文选用Flannel，需额外增加-pod-network-cidr=10.244.0.0/16。增加之前需按文档设置
+
+```
+sysctl net.bridge.bridge-nf-call-iptables=1
+```
+
+> For `flannel` to work correctly, you must pass 
+>
+> `--pod-network-cidr=10.244.0.0/16` to `kubeadm init`.
+>
+> Set `/proc/sys/net/bridge/bridge-nf-call-iptables` to `1` by running `sysctl net.bridge.bridge-nf-call-iptables=1` to pass bridged IPv4 traffic to iptables’ chains. This is a requirement for some CNI plugins to work, for more information please see [here](https://kubernetes.io/docs/concepts/cluster-administration/network-plugins/#network-plugin-requirements).
+
+
+
+kubeadm不指定api-server的话，会用默认的网卡进行通信
+
+```bash
+[root@master ~]# ip route
+default via 10.0.2.2 dev enp0s3 proto dhcp metric 100
+10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 metric 100
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1
+192.168.56.0/24 dev enp0s8 proto kernel scope link src 192.168.56.101 metric 101  
+```
+
+可以看到虚拟机中CentOS的默认default使用的是enp0s3，我们要用的是内网的enp0s8的地址`192.168.56.101`,kubeadm init时就需指定api-server的地址
+
+
+
+**实际执行的命令**
+
+```bash
+kubeadm init --image-repository registry.aliyuncs.com/google_containers --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address 192.168.56.101
+```
+
+然后在等着下载，看网络速度，有几个100～200M的image，可以开另一个终端执行docker images看到有下载。
+
+有遇到阿里的下载错误，请重新执行让再下载。
+
+
+
+
+
+最后会提示
+
+```bash
+Your Kubernetes master has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of machines by running the following on each node
+as root:
+
+  kubeadm join 192.168.56.101:6443 --token qpazvy.ra54yk4zwjj5rvi0 --discovery-token-ca-cert-hash sha256:d9479075baa585015df4b58932fef2a525e99ba2978cfa1d85239f24846e79df
+```
+
+这里只列出的普通用户，上面的文档链接中有说root的方式。本文使用root，使用下面的export
+
+```
+Alternatively, if you are the root user, you can run:
+
+export KUBECONFIG=/etc/kubernetes/admin.conf
+```
+
+查看node状态
+
+```bash
+[root@master ~]# kubectl get nodes
+NAME     STATUS     ROLES    AGE   VERSION
+master   NotReady   master   19m   v1.13.4
+
+```
+
+如果显示`NotReady`，可以查看日志
+
+```
+journalctl -fu kubelet
+
+Mar 14 04:30:26 master kubelet[14979]: W0314 04:30:26.781580   14979 cni.go:203] Unable to update cni config: No networks found in /etc/cni/net.d
+Mar 14 04:30:26 master kubelet[14979]: E0314 04:30:26.781870   14979 kubelet.go:2192] Container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
