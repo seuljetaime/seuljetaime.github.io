@@ -462,6 +462,24 @@ kubectl rollout undo deployments/kubernetes-bootcamp
 
 1. 配置本地更新源
 
+      + Virutalbox配置静态IP
+
+        ```
+        cd /etc/sysconfig/network-scripts/
+        
+        # 将下面的文件改成对应的
+        vi ifcfg-enp0s8
+        
+        # 配置如下几项，网关改成对应的。如果你原本是dhcp获取的，可以用ip addr看到原来的配置
+        BOOTPROTO=static
+        IPADDR=192.168.99.105
+        NETMASK=255.255.255.0
+        GATEWAY=192.168.99.1
+        ONBOOT=yes
+        ```
+
+        
+
 2. 禁用防火墙
 
      ```
@@ -676,12 +694,12 @@ as root:
   kubeadm join 192.168.56.101:6443 --token qpazvy.ra54yk4zwjj5rvi0 --discovery-token-ca-cert-hash sha256:d9479075baa585015df4b58932fef2a525e99ba2978cfa1d85239f24846e79df
 ```
 
-这里只列出的普通用户，上面的文档链接中有说root的方式。本文使用root，使用下面的export
+
 
 ```
-Alternatively, if you are the root user, you can run:
-
-export KUBECONFIG=/etc/kubernetes/admin.conf
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 查看node状态
@@ -690,7 +708,6 @@ export KUBECONFIG=/etc/kubernetes/admin.conf
 [root@master ~]# kubectl get nodes
 NAME     STATUS     ROLES    AGE   VERSION
 master   NotReady   master   19m   v1.13.4
-
 ```
 
 如果显示`NotReady`，可以查看日志
@@ -703,14 +720,81 @@ Mar 14 04:30:26 master kubelet[14979]: E0314 04:30:26.781870   14979 kubelet.go:
 
 ```
 
+### 配置网络
+
+上文最后的日志显示网络插件未准备好，
+
+```
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
+```
+
+kube-flannel.yml中的image是`quay.io/coreos/flannel:v0.11.0-amd64`，如果不能下载，请设置docker pull代理，或者从其他人克隆的库获取。
+
+```bash
+wget https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
+
+docker load < flannel.tar
+kubectl apply -f kube-flannel.yml
+```
+
+
+
+## work node
+
+按master的步骤安装到kubeadm，但不要执行kubeadm init
+
+1. 在master节点查看token及sha256
+
+   ```
+   kubeadm token list
+   
+   openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1
+   ```
+
+2. 在node节点执行
+
+   ```
+   kubeadm join --token <token> <master-ip>:<master-port> --discovery-token-ca-cert-hash sha256:<hash>
+   ```
+
+3. 在master节点执行
+
+   ```
+   [root@master ~]# kubectl get nodes
+   NAME     STATUS     ROLES    AGE     VERSION
+   master   Ready      master   7h10m   v1.13.4
+   node1    NotReady   <none>   43s     v1.13.4
+   ```
+
+   node节点有问题，在node节点使用下面命令查询日志信息
+
+   ```
+   journalctl -fu kubelet
+   
+   # ImagePullBackOff: Back-off pulling image "quay.io/coreos/flannel:v0.11.0-amd64"
+   # 发现是flannel没有下载下来，使用手动load的形式加载docker image
+   
+   # 重启kubelet
+   
+   ```
+
+   也可以使用下面命令查看pod的状态
+
+   ```
+   kubectl get pod --all-namespaces -o wide
+   
+   kubectl describe pod
+   ```
+
+
+
+## Ingress
+
+
+
+## FAQ
 
 
 
 
-
-
-
-
-
-
-
+kubectl 命令自动补全功能
