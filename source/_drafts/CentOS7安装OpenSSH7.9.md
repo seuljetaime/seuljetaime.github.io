@@ -148,6 +148,9 @@ telnet 192.168.99.100 2889
    cd openssh-7.9p1
    
    ./configure --prefix=/usr --sysconfdir=/etc/ssh --with-md5-passwords --with-zlib --with-pam
+   
+   如果需要更新手动安装的openssl，请配置下面的项
+   --with-ssl-dir=/usr/local/openssl/
    ```
 
 5. make但不make install
@@ -251,3 +254,41 @@ telnet 192.168.99.100 2889
 测试sshd_config
 
 `/usr/sbin/sshd -t -f /etc/ssh/sshd_config`
+
+
+
+
+
+# 升级OpenSSL
+
+```bash
+yum install gcc -y
+
+wget 最新版
+
+tar zxvf openssl-xxx.tar.gz
+
+cd openssl-xxxx
+
+./config --prefix=/usr/local/openssl shared
+
+make
+
+make install
+
+mv /usr/bin/openssl /usr/bin/openssl.old
+mv /usr/lib64/openssl /usr/lib64/openssl.old
+mv /usr/lib64/libssl.so /usr/lib64/libssl.so.old
+
+mv /usr/include/openssl  /usr/include/openssl.old
+
+ln -s /usr/local/openssl/bin/openssl /usr/bin/openssl
+ln -s /usr/local/openssl/include/openssl /usr/include/openssl
+ln -s /usr/local/openssl/lib/libssl.so /usr/lib64/libssl.so
+echo "/usr/local/openssl/lib" >> /etc/ld.so.conf
+ldconfig -v // 建立动态链接
+
+
+ln -s /usr/local/lib64/libcrypto.so.1.1 /usr/lib64/libcrypto.so.1.1
+```
+
