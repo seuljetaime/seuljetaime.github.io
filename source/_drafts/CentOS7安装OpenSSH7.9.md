@@ -292,3 +292,30 @@ ldconfig -v // 建立动态链接
 ln -s /usr/local/lib64/libcrypto.so.1.1 /usr/lib64/libcrypto.so.1.1
 ```
 
+
+
+
+
+# 升级OpenSSH 8.0
+
+如果之前是用rpm安装的，则按照上文安装OpenSSH7.9的步骤升级。
+
+如果以前用源码升级，我这边试过8.0编译时指定同个--prefix，可以直接覆盖升级。也试了下make uninstall 7.9，然后安装，也可以。
+
+
+
+**备注：下列命令没有备份配置文件，还是使用的7.9的配置**
+
+```
+[root@localhost ~]# cd openssh-7.9p1
+[root@localhost openssh-7.9p1]# make uninstall
+[root@localhost openssh-7.9p1]# ssh -V
+-bash: /usr/bin/ssh: No such file or directory
+
+[root@localhost openssh-7.9p1]# cd ../openssh-8.0p1
+[root@localhost openssh-8.0p1]# make
+[root@localhost openssh-8.0p1]# make install
+[root@localhost openssh-8.0p1]# ssh -V
+OpenSSH_8.0p1, OpenSSL 1.0.2k-fips  26 Jan 2017
+```
+
