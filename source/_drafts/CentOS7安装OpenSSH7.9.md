@@ -146,7 +146,18 @@ telnet 192.168.99.100 2889
    ```
    tar -zxvf openssh-7.9p1.tar.gz
    cd openssh-7.9p1
+   ```
+
+   （可选）隐藏ssh版本号，编译前修改版本信息，修改成自定义的
+
+   ```
+   vim version.h
    
+   #define SSH_VERSION     "My Server"
+   #define SSH_PORTABLE    "p1"
+   ```
+
+   ```
    ./configure --prefix=/usr --sysconfdir=/etc/ssh --with-md5-passwords --with-zlib --with-pam
    
    如果需要更新手动安装的openssl，请配置下面的项
