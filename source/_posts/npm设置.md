@@ -16,6 +16,9 @@ tags:
     npm config get registry
     npm config set registry https://registry.npm.taobao.org
     npm config get registry
+    
+    # 默认npm源
+    npm config set registry https://registry.npmjs.org/
     ```
 
 2. cnpm
@@ -45,7 +48,7 @@ tags:
     npm config set proxy http://server:port
     npm config set https-proxy http://server:port
     
-    # 代码需要账号密码
+    # 代理需要账号密码
     npm config set proxy http://username:password@server:port
     npm config set https-proxy http://username:pawword@server:port
     

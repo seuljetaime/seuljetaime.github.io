@@ -61,4 +61,35 @@ tags: hexo
   hexo publish 替换你的文章名
   ```
 
-  
+
+
+
+# 安装
+
+`npm install hexo-cli -g`
+
+
+
+## 升级
+
+1. 修改`package.json`中hexo的版本
+2. 执行npm update
+3. 检查漏洞`npm audit`
+4. 修复漏洞依赖`npm audit fix`
+
+
+
+使用`npm-check-updates`更新依赖
+
+```
+npm install -g npm-check-updates
+# 检查更新，显示的信息和npm outdated一致
+npm-check-updates
+# 可简写为ncu
+
+# 更新package.json
+npm-check-updates -u
+# 可简写为ncu -u
+npm update
+```
+
